@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GrowthOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #080809;
+  --surface:   #0f0f12;
+  --card:      #13131a;
+  --border:    rgba(255,255,255,0.06);
+  --border2:   rgba(255,255,255,0.10);
+  --text:      #f0f0f8;
+  --muted:     #6b6b85;
+  --cyan:      #00e5ff;
+  --cyan-d:    rgba(0,229,255,0.10);
+  --green:     #b4ff4e;
+  --green-d:   rgba(180,255,78,0.08);
+  --yellow:    #ffc845;
+  --yellow-d:  rgba(255,200,69,0.08);
+  --red:       #ff5f57;
+  --red-d:     rgba(255,95,87,0.08);
+  --purple:    #a78bfa;
+  --purple-d:  rgba(167,139,250,0.08);
+  --orange:    #ff9f43;
+  --font:      'Outfit', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+  --r:         16px;
+  --r-sm:      10px;
+  --shadow:    0 0 0 1px rgba(255,255,255,0.045), 0 8px 32px rgba(0,0,0,0.45);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.5}
+
+/* AMBIENT */
+.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.amb::before{content:'';position:absolute;top:-200px;left:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(0,229,255,0.07) 0%,transparent 65%);filter:blur(100px)}
+.amb::after{content:'';position:absolute;bottom:-300px;right:-200px;width:800px;height:800px;background:radial-gradient(circle,rgba(167,139,250,0.07) 0%,transparent 65%);filter:blur(120px)}
+.amb-mid{position:fixed;top:35%;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(180,255,78,0.04) 0%,transparent 70%);filter:blur(80px);pointer-events:none;z-index:0}
+.grid-tex{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.014) 1px,transparent 1px);background-size:52px 52px;pointer-events:none;z-index:0}
+
+/* NAV */
+.nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:300;display:flex;align-items:center;gap:2px;background:rgba(12,12,16,0.88);border:1px solid rgba(255,255,255,0.09);border-radius:100px;padding:4px;backdrop-filter:blur(28px) saturate(180%);box-shadow:0 2px 0 rgba(255,255,255,0.04) inset,0 12px 48px rgba(0,0,0,0.65)}
+.nav-brand{font-weight:800;font-size:13px;letter-spacing:-0.01em;color:var(--text);padding:7px 14px 7px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);animation:glow 2.5s ease-in-out infinite}
+@keyframes glow{0%,100%{opacity:1;box-shadow:0 0 12px var(--cyan)}50%{opacity:0.5;box-shadow:0 0 4px var(--cyan)}}
+.nav-sep{width:1px;height:18px;background:rgba(255,255,255,0.08);flex-shrink:0;margin:0 1px}
+.nav-tab{font-family:var(--font);font-size:12.5px;font-weight:500;color:var(--muted);padding:7px 15px;border-radius:100px;border:none;background:none;cursor:pointer;transition:color .18s,background .18s;white-space:nowrap;letter-spacing:.005em}
+.nav-tab:hover{color:var(--text);background:rgba(255,255,255,0.06)}
+.nav-tab.active{color:var(--text);background:rgba(255,255,255,0.09);font-weight:600}
+
+/* LAYOUT */
+.wrap{position:relative;z-index:10;max-width:1340px;margin:0 auto;padding:84px 24px 60px}
+.page{display:none;animation:fi .28s ease}
+.page.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* PAGE HEADER */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px}
+.ph-ey{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.ph-title{font-size:24px;font-weight:800;letter-spacing:-.03em;color:var(--text);line-height:1.1}
+.ph-sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;transition:border-color .25s}
+.card:hover{border-color:var(--border2)}
+.cl{font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.mb{margin-bottom:12px}
+@media(max-width:1100px){.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* PROGRESS RING */
+.ring-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:8px 0}
+.ring-svg{transform:rotate(-90deg);display:block}
+.ring-track{fill:none;stroke:rgba(255,255,255,0.05)}
+.ring-fill{fill:none;stroke-linecap:round;transition:stroke-dashoffset 1.3s cubic-bezier(.4,0,.2,1)}
+.ring-center{text-align:center}
+.ring-pct{font-size:20px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.ring-desc{font-size:10px;color:var(--muted);margin-top:2px;letter-spacing:.03em}
+.ring-tag{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+
+/* PROGRESS BAR */
+.pb{margin-bottom:11px}
+.pb:last-child{margin-bottom:0}
+.pb-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.pb-label{font-size:12.5px;font-weight:500;color:var(--text)}
+.pb-val{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.pb-track{width:100%;height:4px;background:rgba(255,255,255,0.05);border-radius:100px;overflow:hidden}
+.pb-fill{height:100%;border-radius:100px;transition:width .55s cubic-bezier(.4,0,.2,1)}
+
+/* TRACKER FIELD */
+.tf{padding:15px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.tf:last-child{border-bottom:none;padding-bottom:0}
+.tf:first-child{padding-top:0}
+.tf-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.tf-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.tf-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.tf-num{font-family:var(--mono);font-size:13px;font-weight:700}
+.tf-ctrls{display:flex;align-items:center;gap:6px;margin-top:9px}
+.cb{width:28px;height:28px;border-radius:7px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--muted);font-size:16px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;font-family:var(--font);line-height:1;padding-bottom:1px}
+.cb:hover{border-color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.09);color:var(--text)}
+.cb.n:hover{border-color:rgba(255,95,87,.4);background:rgba(255,95,87,.08);color:var(--red)}
+.cb.p:hover{border-color:rgba(180,255,78,.4);background:rgba(180,255,78,.08);color:var(--green)}
+.cb-lbl{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:26px;text-align:center}
+.cb-sp{flex:1}
+.cb-val{font-family:var(--mono);font-size:15px;font-weight:700;min-width:62px;text-align:right;letter-spacing:-.01em}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid}
+.b-g{background:var(--green-d);border-color:rgba(180,255,78,.22);color:var(--green)}
+.b-y{background:var(--yellow-d);border-color:rgba(255,200,69,.22);color:var(--yellow)}
+.b-r{background:var(--red-d);border-color:rgba(255,95,87,.22);color:var(--red)}
+.b-c{background:var(--cyan-d);border-color:rgba(0,229,255,.22);color:var(--cyan)}
+.b-p{background:var(--purple-d);border-color:rgba(167,139,250,.22);color:var(--purple)}
+
+/* DIVIDER */
+.dv{height:1px;background:rgba(255,255,255,0.05);margin:16px 0}
+
+/* BIG SCORE */
+.sco{font-size:46px;font-weight:900;letter-spacing:-.05em;line-height:1}
+
+/* BANNER */
+.banner{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:var(--r-sm);border:1px solid;margin-bottom:22px;transition:all .4s}
+.bn-ico{font-size:17px;flex-shrink:0}
+.bn-txt{font-size:12.5px;font-weight:500;line-height:1.45}
+.banner.ok{background:rgba(180,255,78,.05);border-color:rgba(180,255,78,.15);color:var(--green)}
+.banner.so{background:rgba(255,200,69,.05);border-color:rgba(255,200,69,.15);color:var(--yellow)}
+.banner.no{background:rgba(255,95,87,.05);border-color:rgba(255,95,87,.15);color:var(--red)}
+
+/* STAT CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px}
+.chip{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:10px 12px;flex:1;min-width:86px}
+.chip-val{font-size:19px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.chip-key{font-size:9.5px;color:var(--muted);margin-top:3px;font-weight:500;letter-spacing:.04em}
+
+/* SOCIAL */
+.si{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.si:last-child{border-bottom:none;padding-bottom:0}
+.si:first-child{padding-top:0}
+.si-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1px solid rgba(255,255,255,0.07)}
+.si-name{font-size:12.5px;font-weight:500;flex:1}
+.si-btns{display:flex;gap:4px}
+.si-val{font-family:var(--mono);font-size:12px;font-weight:700;min-width:44px;text-align:right}
+
+/* GOALS */
+.g-form{display:flex;gap:8px;margin-bottom:14px}
+.g-inp{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:var(--r-sm);padding:9px 13px;color:var(--text);font-family:var(--font);font-size:13px;font-weight:500;outline:none;transition:border-color .2s,background .2s}
+.g-inp::placeholder{color:var(--muted)}
+.g-inp:focus{border-color:rgba(0,229,255,.3);background:rgba(0,229,255,.025)}
+.btn-add{background:var(--cyan-d);border:1px solid rgba(0,229,255,.2);color:var(--cyan);font-family:var(--font);font-weight:700;font-size:12.5px;padding:9px 16px;border-radius:var(--r-sm);cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn-add:hover{background:rgba(0,229,255,.17);border-color:rgba(0,229,255,.35)}
+.g-item{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);border-radius:var(--r-sm);padding:13px 15px;margin-bottom:7px;transition:border-color .2s}
+.g-item:hover{border-color:rgba(255,255,255,0.1)}
+.g-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.g-name{font-size:13px;font-weight:600}
+.g-pct{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan)}
+.g-acts{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.bs{border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--muted);font-family:var(--font);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;transition:all .15s}
+.bs:hover{background:rgba(255,255,255,0.09);color:var(--text);border-color:rgba(255,255,255,.14)}
+.bs.up:hover{background:rgba(180,255,78,.1);color:var(--green);border-color:rgba(180,255,78,.3)}
+.bs.dl{border-color:rgba(255,95,87,.18);color:rgba(255,95,87,.7)}
+.bs.dl:hover{background:rgba(255,95,87,.1);color:var(--red);border-color:rgba(255,95,87,.35)}
+
+/* CHART */
+.chart{display:flex;align-items:flex-end;gap:8px;height:106px;margin:14px 0 6px}
+.ch-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+.ch-bar{width:100%;border-radius:5px 5px 2px 2px;transition:height .9s cubic-bezier(.4,0,.2,1);min-height:3px;cursor:pointer;opacity:.78}
+.ch-bar:hover{opacity:1}
+.ch-lbl{font-size:9.5px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+
+/* ANALYTICS STATS */
+.an-stats{display:flex;gap:22px;flex-wrap:wrap;margin-top:12px}
+.an-st-val{font-size:22px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.an-st-key{font-size:10px;color:var(--muted);margin-top:3px;font-weight:500}
+
+/* HISTORY */
+.h-head{display:grid;grid-template-columns:108px repeat(5,1fr);gap:8px;padding:0 0 11px;border-bottom:1px solid rgba(255,255,255,0.05);margin-bottom:8px}
+.h-hc{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);text-align:center}
+.h-hc:first-child{text-align:left}
+.h-row{display:grid;grid-template-columns:108px repeat(5,1fr);gap:8px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03);border-radius:6px;transition:background .15s}
+.h-row:hover{background:rgba(255,255,255,0.018)}
+.h-date{font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:500}
+.h-cell{text-align:center}
+.h-val{font-family:var(--mono);font-size:12.5px;font-weight:700}
+.h-key{font-size:9px;color:var(--muted);margin-top:2px}
+
+/* BTNS */
+.btn-ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--muted);font-family:var(--font);font-size:12px;font-weight:600;padding:8px 15px;border-radius:8px;cursor:pointer;transition:all .18s}
+.btn-ghost:hover{background:rgba(255,255,255,0.08);color:var(--text);border-color:rgba(255,255,255,.14)}
+.btn-danger{background:var(--red-d);border:1px solid rgba(255,95,87,.18);color:rgba(255,95,87,.8);font-family:var(--font);font-size:12px;font-weight:600;padding:8px 15px;border-radius:8px;cursor:pointer;transition:all .18s}
+.btn-danger:hover{background:rgba(255,95,87,.14);color:var(--red);border-color:rgba(255,95,87,.35)}
+
+/* MISC */
+.warn{font-size:11.5px;color:var(--red);margin-top:8px;font-weight:500;display:flex;align-items:center;gap:5px}
+.empty{text-align:center;padding:36px 20px;color:var(--muted);font-size:13px;font-weight:500}
+</style>
+</head>
+<body>
+
+<div class="amb"></div>
+<div class="amb-mid"></div>
+<div class="grid-tex"></div>
+
+<nav class="nav">
+  <div class="nav-brand"><div class="nav-dot"></div>GrowthOS</div>
+  <div class="nav-sep"></div>
+  <button class="nav-tab active" onclick="go('dashboard',this)">Dashboard</button>
+  <button class="nav-tab" onclick="go('tracker',this)">Tracker</button>
+  <button class="nav-tab" onclick="go('goals',this)">Goals</button>
+  <button class="nav-tab" onclick="go('analytics',this)">Analytics</button>
+  <button class="nav-tab" onclick="go('history',this)">History</button>
+</nav>
+
+<div class="wrap">
+
+<!-- ████ DASHBOARD ████ -->
+<div id="p-dashboard" class="page active">
+  <div class="ph">
+    <div>
+      <div class="ph-ey">Life Operating System</div>
+      <div class="ph-title">Good day — let's build.</div>
+      <div class="ph-sub" id="d-date"></div>
+    </div>
+    <button class="btn-danger" onclick="resetToday()">Reset Today</button>
+  </div>
+
+  <div id="d-banner" class="banner ok">
+    <span class="bn-ico" id="d-bico">⚡</span>
+    <span class="bn-txt" id="d-btxt">Calculating your performance...</span>
+  </div>
+
+  <!-- Row 1: rings + big scores -->
+  <div class="g4 mb">
+    <div class="card ring-wrap">
+      <div class="cl">Year Progress</div>
+      <svg class="ring-svg" width="96" height="96" viewBox="0 0 96 96">
+        <circle class="ring-track" cx="48" cy="48" r="38" stroke-width="7"/>
+        <circle class="ring-fill" id="r-year" cx="48" cy="48" r="38" stroke-width="7" stroke="var(--green)" stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-pct" id="r-yr-pct" style="color:var(--green)">0%</div>
+        <div class="ring-desc" id="r-yr-d">— days left</div>
+      </div>
+    </div>
+    <div class="card ring-wrap">
+      <div class="cl">Month Progress</div>
+      <svg class="ring-svg" width="96" height="96" viewBox="0 0 96 96">
+        <circle class="ring-track" cx="48" cy="48" r="38" stroke-width="7"/>
+        <circle class="ring-fill" id="r-month" cx="48" cy="48" r="38" stroke-width="7" stroke="var(--cyan)" stroke-dasharray="238.76" stroke-dashoffset="238.76"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-pct" id="r-mo-pct" style="color:var(--cyan)">0%</div>
+        <div class="ring-desc" id="r-mo-d">— days left</div>
+      </div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
+      <div class="cl">Growth Score</div>
+      <div class="sco" id="d-growth" style="color:var(--green)">—</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">Overall performance index</div>
+      <div style="margin-top:10px;" id="d-growth-b"></div>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;justify-content:space-between;">
+      <div class="cl">Discipline Score</div>
+      <div class="sco" id="d-disc" style="color:var(--cyan)">—</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">Study · Workout · Deep Work</div>
+      <div style="margin-top:10px;" id="d-disc-b"></div>
+    </div>
+  </div>
+
+  <!-- Row 2: health, focus, chips -->
+  <div class="g3 mb">
+    <div class="card">
+      <div class="cl">Health Score</div>
+      <div style="font-size:36px;font-weight:900;letter-spacing:-.05em;line-height:1;" id="d-health" style="color:var(--yellow)">—</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:5px;">Sleep · Protein · Calories</div>
+      <div class="dv"></div>
+      <div id="d-sleep-b"></div>
+    </div>
+    <div class="card">
+      <div class="cl">Focus Score</div>
+      <div style="font-size:36px;font-weight:900;letter-spacing:-.05em;line-height:1;" id="d-focus" style="color:var(--purple)">—</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:5px;">Social media discipline</div>
+      <div class="dv"></div>
+      <div id="d-focus-b"></div>
+    </div>
+    <div class="card">
+      <div class="cl">Today's Activity</div>
+      <div class="chips" id="d-chips"></div>
+    </div>
+  </div>
+
+  <!-- Row 3: summary bars -->
+  <div class="card">
+    <div class="cl">Daily Breakdown</div>
+    <div class="g2">
+      <div>
+        <div class="pb"><div class="pb-row"><span class="pb-label">Study</span><span class="pb-val" id="ds-study">0 / 10h</span></div><div class="pb-track"><div class="pb-fill" id="db-study" style="background:var(--cyan);width:0%"></div></div></div>
+        <div class="pb"><div class="pb-row"><span class="pb-label">Workout</span><span class="pb-val" id="ds-workout">0 / 2h</span></div><div class="pb-track"><div class="pb-fill" id="db-workout" style="background:var(--green);width:0%"></div></div></div>
+        <div class="pb"><div class="pb-row"><span class="pb-label">Deep Work</span><span class="pb-val" id="ds-deepwork">0 / 10h</span></div><div class="pb-track"><div class="pb-fill" id="db-deepwork" style="background:var(--yellow);width:0%"></div></div></div>
+        <div class="pb"><div class="pb-row"><span class="pb-label">Skills</span><span class="pb-val" id="ds-skills">0 / 10h</span></div><div class="pb-track"><div class="pb-fill" id="db-skills" style="background:var(--purple);width:0%"></div></div></div>
+      </div>
+      <div>
+        <div class="pb"><div class="pb-row"><span class="pb-label">Sleep</span><span class="pb-val" id="ds-sleep">0 / 9h</span></div><div class="pb-track"><div class="pb-fill" id="db-sleep" style="background:var(--cyan);width:0%"></div></div></div>
+        <div class="pb"><div class="pb-row"><span class="pb-label">Calories</span><span class="pb-val" id="ds-cal">0 / 3500</span></div><div class="pb-track"><div class="pb-fill" id="db-cal" style="background:var(--yellow);width:0%"></div></div></div>
+        <div class="pb"><div class="pb-row"><span class="pb-label">Protein</span><span class="pb-val" id="ds-protein">0 / 180g</span></div><div class="pb-track"><div class="pb-fill" id="db-protein" style="background:var(--green);width:0%"></div></div></div>
+        <div class="pb"><div class="pb-row"><span class="pb-label">Social Media</span><span class="pb-val" id="ds-social">0m</span></div><div class="pb-track"><div class="pb-fill" id="db-social" style="background:var(--red);width:0%"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ████ TRACKER ████ -->
+<div id="p-tracker" class="page">
+  <div class="ph">
+    <div>
+      <div class="ph-ey">Daily Input</div>
+      <div class="ph-title">Track Today</div>
+      <div class="ph-sub">Every hour logged compounds into results.</div>
+    </div>
+  </div>
+  <div class="g2">
+    <!-- Left -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card">
+        <div class="cl">Discipline</div>
+        <div class="tf">
+          <div class="tf-row"><div class="tf-name"><div class="tf-dot" style="background:var(--cyan)"></div>Study Hours</div><div class="tf-num" id="tv-study" style="color:var(--cyan)">0h</div></div>
+          <div class="pb-track"><div class="pb-fill" id="tb-study" style="background:var(--cyan);width:0%"></div></div>
+          <div class="tf-ctrls"><button class="cb n" onclick="adj('study',-.5)">−</button><span class="cb-lbl">0.5h</span><button class="cb p" onclick="adj('study',.5)">+</button><div class="cb-sp"></div><span class="cb-val" id="tcv-study">0 / 10h</span></div>
+        </div>
+        <div class="tf">
+          <div class="tf-row"><div class="tf-name"><div class="tf-dot" style="background:var(--green)"></div>Workout</div><div class="tf-num" id="tv-workout" style="color:var(--green)">0h</div></div>
+          <div class="pb-track"><div class="pb-fill" id="tb-workout" style="background:var(--green);width:0%"></div></div>
+          <div class="tf-ctrls"><button class="cb n" onclick="adj('workout',-.5)">−</button><span class="cb-lbl">0.5h</span><button class="cb p" onclick="adj('workout',.5)">+</button><div class="cb-sp"></div><span class="cb-val" id="tcv-workout">0 / 2h</span></div>
+        </div>
+        <div class="tf">
+          <div class="tf-row"><div class="tf-name"><div class="tf-dot" style="background:var(--yellow)"></div>Deep Work</div><div class="tf-num" id="tv-deepwork" style="color:var(--yellow)">0h</div></div>
+          <div class="pb-track"><div class="pb-fill" id="tb-deepwork" style="background:var(--yellow);width:0%"></div></div>
+          <div class="tf-ctrls"><button class="cb n" onclick="adj('deepwork',-.5)">−</button><span class="cb-lbl">0.5h</span><button class="cb p" onclick="adj('deepwork',.5)">+</button><div class="cb-sp"></div><span class="cb-val" id="tcv-deepwork">0 / 10h</span></div>
+        </div>
+        <div class="tf">
+          <div class="tf-row"><div class="tf-name"><div class="tf-dot" style="background:var(--purple)"></div>Skills Learning</div><div class="tf-num" id="tv-skills" style="color:var(--purple)">0h</div></div>
+          <div class="pb-track"><div class="pb-fill" id="tb-skills" style="background:var(--purple);width:0%"></div></div>
+          <div class="tf-ctrls"><button class="cb n" onclick="adj('skills',-.5)">−</button><span class="cb-lbl">0.5h</span><button class="cb p" onclick="adj('skills',.5)">+</button><div class="cb-sp"></div><span class="cb-val" id="tcv-skills">0 / 10h</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cl">Sleep</div>
+        <div class="tf" style="border:none;padding:0;">
+          <div class="tf-row"><div class="tf-name"><div class="tf-dot" style="background:var(--cyan)"></div>Sleep Hours</div><div id="t-sleep-b"></div></div>
+          <div class="pb-track" style="margin-bottom:9px;"><div class="pb-fill" id="tb-sleep" style="background:var(--cyan);width:0%"></div></div>
+          <div class="tf-ctrls"><button class="cb n" onclick="adj('sleep',-.5)">−</button><span class="cb-lbl">0.5h</span><button class="cb p" onclick="adj('sleep',.5)">+</button><div class="cb-sp"></div><span class="cb-val" id="tcv-sleep">0 / 9h</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Right -->
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="card">
+        <div class="cl">Nutrition</div>
+        <div class="tf">
+          <div class="tf-row"><div class="tf-name"><div class="tf-dot" style="background:var(--yellow)"></div>Calories</div><div class="tf-num" id="tv-cal" style="color:var(--yellow)">0 kcal</div></div>
+          <div class="pb-track"><div class="pb-fill" id="tb-cal" style="background:var(--yellow);width:0%"></div></div>
+          <div class="tf-ctrls"><button class="cb n" onclick="adjI('cal',-50)">−</button><span class="cb-lbl">50</span><button class="cb p" onclick="adjI('cal',50)">+</button><div class="cb-sp"></div><span class="cb-val" id="tcv-cal">0 / 3500</span></div>
+        </div>
+        <div class="tf">
+          <div class="tf-row"><div class="tf-name"><div class="tf-dot" style="background:var(--green)"></div>Protein</div><div class="tf-num" id="tv-protein" style="color:var(--green)">0g</div></div>
+          <div class="pb-track"><div class="pb-fill" id="tb-protein" style="background:var(--green);width:0%"></div></div>
+          <div class="tf-ctrls"><button class="cb n" onclick="adjI('protein',-5)">−</button><span class="cb-lbl">5g</span><button class="cb p" onclick="adjI('protein',5)">+</button><div class="cb-sp"></div><span class="cb-val" id="tcv-protein">0 / 180g</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cl">Social Media</div>
+        <div class="si"><div class="si-ico" style="background:rgba(193,76,255,.12);">📸</div><span class="si-name">Instagram</span><div class="si-btns"><button class="cb n" onclick="adjS('instagram',-15)">−</button><button class="cb p" onclick="adjS('instagram',15)">+</button></div><span class="si-val" id="sv-instagram">0m</span></div>
+        <div class="si"><div class="si-ico" style="background:rgba(255,59,48,.12);">▶</div><span class="si-name">YouTube</span><div class="si-btns"><button class="cb n" onclick="adjS('youtube',-15)">−</button><button class="cb p" onclick="adjS('youtube',15)">+</button></div><span class="si-val" id="sv-youtube">0m</span></div>
+        <div class="si"><div class="si-ico" style="background:rgba(255,255,255,.07);">✕</div><span class="si-name">X / Twitter</span><div class="si-btns"><button class="cb n" onclick="adjS('twitter',-15)">−</button><button class="cb p" onclick="adjS('twitter',15)">+</button></div><span class="si-val" id="sv-twitter">0m</span></div>
+        <div class="si"><div class="si-ico" style="background:rgba(0,229,255,.08);">📱</div><span class="si-name">Other</span><div class="si-btns"><button class="cb n" onclick="adjS('other',-15)">−</button><button class="cb p" onclick="adjS('other',15)">+</button></div><span class="si-val" id="sv-other">0m</span></div>
+        <div class="dv"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:12px;font-weight:600;color:var(--muted);">Total usage today</span>
+          <span style="font-family:var(--mono);font-size:15px;font-weight:700;" id="sv-total">0m</span>
+        </div>
+        <div id="s-warn" class="warn" style="display:none;">⚠ High usage — consider a digital detox.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ████ GOALS ████ -->
+<div id="p-goals" class="page">
+  <div class="ph">
+    <div>
+      <div class="ph-ey">Personal Goals</div>
+      <div class="ph-title">Goals System</div>
+      <div class="ph-sub">Track what matters, delete what doesn't.</div>
+    </div>
+  </div>
+  <div class="card" style="max-width:700px;">
+    <div class="cl">New Goal</div>
+    <div class="g-form">
+      <input class="g-inp" id="g-inp" placeholder="Enter a goal…" maxlength="80"/>
+      <button class="btn-add" onclick="addGoal()">+ Add</button>
+    </div>
+    <div id="goals-list"></div>
+  </div>
+</div>
+
+<!-- ████ ANALYTICS ████ -->
+<div id="p-analytics" class="page">
+  <div class="ph">
+    <div>
+      <div class="ph-ey">Performance Intelligence</div>
+      <div class="ph-title">Analytics</div>
+      <div class="ph-sub">Weekly patterns and monthly intelligence.</div>
+    </div>
+  </div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="cl">7-Day Activity Chart</div>
+      <div class="chart" id="an-chart"></div>
+      <div class="an-stats">
+        <div><div class="an-st-val" id="an-wh">—</div><div class="an-st-key">Weekly Hours</div></div>
+        <div><div class="an-st-val" style="color:var(--green)" id="an-wd">—</div><div class="an-st-key">Avg Discipline</div></div>
+        <div><div class="an-st-val" style="color:var(--cyan)" id="an-wp">—</div><div class="an-st-key">Productivity</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="cl">Monthly Performance</div>
+      <div class="g2" style="margin-top:8px;gap:18px;">
+        <div><div style="font-size:30px;font-weight:900;letter-spacing:-.04em;color:var(--yellow);" id="an-ms">—</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px;">Monthly Score</div></div>
+        <div><div style="font-size:30px;font-weight:900;letter-spacing:-.04em;color:var(--cyan);" id="an-mh">—</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px;">Productive Hrs</div></div>
+        <div><div style="font-size:30px;font-weight:900;letter-spacing:-.04em;color:var(--green);" id="an-md">—</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px;">Avg Discipline</div></div>
+        <div><div id="an-mr"></div><div style="font-size:10.5px;color:var(--muted);margin-top:8px;">Rating</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="cl">Discipline Breakdown</div>
+      <div style="font-size:34px;font-weight:900;letter-spacing:-.04em;color:var(--green);margin-bottom:14px;" id="an-disc">—</div>
+      <div class="pb"><div class="pb-row"><span class="pb-label">Study</span><span class="pb-val" id="an-study">—</span></div><div class="pb-track"><div class="pb-fill" id="anb-study" style="background:var(--cyan);width:0%"></div></div></div>
+      <div class="pb"><div class="pb-row"><span class="pb-label">Workout</span><span class="pb-val" id="an-workout">—</span></div><div class="pb-track"><div class="pb-fill" id="anb-workout" style="background:var(--green);width:0%"></div></div></div>
+      <div class="pb"><div class="pb-row"><span class="pb-label">Deep Work</span><span class="pb-val" id="an-deepwork">—</span></div><div class="pb-track"><div class="pb-fill" id="anb-deepwork" style="background:var(--yellow);width:0%"></div></div></div>
+      <div class="pb"><div class="pb-row"><span class="pb-label">Skills</span><span class="pb-val" id="an-skills">—</span></div><div class="pb-track"><div class="pb-fill" id="anb-skills" style="background:var(--purple);width:0%"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="cl">Health Breakdown</div>
+      <div style="font-size:34px;font-weight:900;letter-spacing:-.04em;color:var(--cyan);margin-bottom:14px;" id="an-health">—</div>
+      <div class="pb"><div class="pb-row"><span class="pb-label">Sleep</span><span class="pb-val" id="an-sleep">—</span></div><div class="pb-track"><div class="pb-fill" id="anb-sleep" style="background:var(--cyan);width:0%"></div></div></div>
+      <div class="pb"><div class="pb-row"><span class="pb-label">Protein</span><span class="pb-val" id="an-protein">—</span></div><div class="pb-track"><div class="pb-fill" id="anb-protein" style="background:var(--green);width:0%"></div></div></div>
+      <div class="pb"><div class="pb-row"><span class="pb-label">Calories</span><span class="pb-val" id="an-cal">—</span></div><div class="pb-track"><div class="pb-fill" id="anb-cal" style="background:var(--yellow);width:0%"></div></div></div>
+    </div>
+    <div class="card">
+      <div class="cl">Focus &amp; Growth</div>
+      <div style="font-size:34px;font-weight:900;letter-spacing:-.04em;color:var(--yellow);margin-bottom:14px;" id="an-focus">—</div>
+      <div class="pb"><div class="pb-row"><span class="pb-label">Social Media</span><span class="pb-val" id="an-social">—</span></div><div class="pb-track"><div class="pb-fill" id="anb-social" style="background:var(--red);width:0%"></div></div></div>
+      <div class="dv"></div>
+      <div class="cl" style="margin-bottom:8px;">Overall Growth Score</div>
+      <div style="font-size:34px;font-weight:900;letter-spacing:-.04em;color:var(--green);" id="an-growth">—</div>
+      <div class="pb" style="margin-top:10px;"><div class="pb-track" style="height:5px;"><div class="pb-fill" id="anb-growth" style="background:linear-gradient(90deg,var(--cyan),var(--green));width:0%"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ████ HISTORY ████ -->
+<div id="p-history" class="page">
+  <div class="ph">
+    <div>
+      <div class="ph-ey">Data Log</div>
+      <div class="ph-title">History</div>
+      <div class="ph-sub">Every day recorded, every score saved automatically.</div>
+    </div>
+    <button class="btn-ghost" onclick="snapManual()">Save Today</button>
+  </div>
+  <div class="card">
+    <div class="h-head">
+      <div class="h-hc" style="text-align:left;">Date</div>
+      <div class="h-hc">Study</div>
+      <div class="h-hc">Sleep</div>
+      <div class="h-hc">Calories</div>
+      <div class="h-hc">Protein</div>
+      <div class="h-hc">Score</div>
+    </div>
+    <div id="hist-list"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ─── CONFIG ───────────────────────────────
+const L={study:10,workout:2,deepwork:10,skills:10,sleep:9,cal:3500,protein:180};
+const DCOLS=['var(--cyan)','var(--green)','var(--yellow)','var(--purple)','var(--orange)','var(--cyan)','var(--red)'];
+const WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const pad=n=>String(n).padStart(2,'0');
+const r=n=>Math.round(n);
+
+// ─── STORAGE ──────────────────────────────
+const tKey=()=>{const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const loadDay=()=>{const raw=localStorage.getItem('gos2_'+tKey());return raw?JSON.parse(raw):{study:0,workout:0,deepwork:0,skills:0,sleep:0,cal:0,protein:0,instagram:0,youtube:0,twitter:0,other:0}};
+const saveDay=()=>localStorage.setItem('gos2_'+tKey(),JSON.stringify(D));
+const loadGoals=()=>JSON.parse(localStorage.getItem('gos2_goals')||'[]');
+const saveGoals=()=>localStorage.setItem('gos2_goals',JSON.stringify(goals));
+const loadHist=()=>JSON.parse(localStorage.getItem('gos2_hist')||'[]');
+const saveHist=a=>localStorage.setItem('gos2_hist',JSON.stringify(a));
+
+let D=loadDay();
+let goals=loadGoals();
+
+// ─── SCORES ───────────────────────────────
+const getScores=()=>{
+  const disc=(D.study/L.study+D.workout/L.workout+D.deepwork/L.deepwork+D.skills/L.skills)/4;
+  const slp=D.sleep>=7&&D.sleep<=9?1:D.sleep>=5?.6:D.sleep>0?.3:0;
+  const prt=Math.min(D.protein/L.protein,1);
+  const cal=D.cal>=2500&&D.cal<=L.cal?1:D.cal>0?.5:0;
+  const health=(slp+prt+cal)/3;
+  const soc=D.instagram+D.youtube+D.twitter+D.other;
+  const focus=soc===0?1:soc<=60?.9:soc<=120?.7:soc<=240?.4:.1;
+  const growth=disc*.5+health*.3+focus*.2;
+  return{disc:r(disc*100),health:r(health*100),focus:r(focus*100),growth:r(growth*100)};
+};
+
+// ─── UTILS ────────────────────────────────
+const $=id=>document.getElementById(id);
+const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};
+const setPc=(id,p)=>{const e=$(id);if(e)e.style.width=Math.min(100,Math.max(0,p))+'%'};
+const fmtM=m=>m<60?m+'m':`${Math.floor(m/60)}h ${m%60}m`;
+const mkBadge=s=>{
+  if(s>=75)return`<span class="badge b-g">Excellent</span>`;
+  if(s>=50)return`<span class="badge b-y">Good</span>`;
+  if(s>=25)return`<span class="badge b-c">Average</span>`;
+  return`<span class="badge b-r">Low</span>`;
+};
+const setRing=(id,pct)=>{
+  const el=$(id);if(!el)return;
+  el.style.strokeDashoffset=238.76-(238.76*pct/100);
+};
+
+// ─── ADJUSTERS ────────────────────────────
+window.adj=(f,d)=>{D[f]=Math.max(0,Math.min(L[f],+(D[f]+d).toFixed(1)));saveDay();render()};
+window.adjI=(f,d)=>{D[f]=Math.max(0,Math.min(L[f]*2,D[f]+d));saveDay();render()};
+window.adjS=(f,d)=>{D[f]=Math.max(0,D[f]+d);saveDay();render()};
+
+// ─── RENDER ───────────────────────────────
+const render=()=>{
+  const sc=getScores();
+  const soc=D.instagram+D.youtube+D.twitter+D.other;
+
+  // Dashboard scores
+  set('d-growth',sc.growth);
+  set('d-disc',sc.disc);
+  if($('d-health'))$('d-health').textContent=sc.health;
+  if($('d-focus'))$('d-focus').textContent=sc.focus;
+  if($('d-growth-b'))$('d-growth-b').innerHTML=mkBadge(sc.growth);
+  if($('d-disc-b'))$('d-disc-b').innerHTML=mkBadge(sc.disc);
+  if($('d-focus-b'))$('d-focus-b').innerHTML=mkBadge(sc.focus);
+
+  // Sleep badge
+  const sqTxt=D.sleep>=7?'Optimal':D.sleep>=5?'Average':'Poor';
+  const sqCls=D.sleep>=7?'b-g':D.sleep>=5?'b-y':'b-r';
+  const sbHtml=`<span class="badge ${sqCls}">● ${sqTxt} Sleep</span>`;
+  if($('d-sleep-b'))$('d-sleep-b').innerHTML=sbHtml;
+  if($('t-sleep-b'))$('t-sleep-b').innerHTML=sbHtml;
+
+  // Summary bars
+  const fields=[['study',L.study,'h'],['workout',L.workout,'h'],['deepwork',L.deepwork,'h'],['skills',L.skills,'h']];
+  fields.forEach(([f,lim,u])=>{
+    set('ds-'+f,`${D[f]} / ${lim}${u}`);
+    setPc('db-'+f,(D[f]/lim)*100);
+  });
+  set('ds-sleep',`${D.sleep} / ${L.sleep}h`);setPc('db-sleep',(D.sleep/L.sleep)*100);
+  set('ds-cal',`${D.cal} / ${L.cal}`);setPc('db-cal',(D.cal/L.cal)*100);
+  set('ds-protein',`${D.protein} / ${L.protein}g`);setPc('db-protein',(D.protein/L.protein)*100);
+  set('ds-social',fmtM(soc));setPc('db-social',Math.min((soc/240)*100,100));
+
+  // Chips
+  if($('d-chips'))$('d-chips').innerHTML=[
+    {l:'Study',v:D.study+'h',c:'var(--cyan)'},
+    {l:'Workout',v:D.workout+'h',c:'var(--green)'},
+    {l:'Deep Work',v:D.deepwork+'h',c:'var(--yellow)'},
+    {l:'Skills',v:D.skills+'h',c:'var(--purple)'},
+  ].map(x=>`<div class="chip"><div class="chip-val" style="color:${x.c}">${x.v}</div><div class="chip-key">${x.l}</div></div>`).join('');
+
+  // Banner
+  const bn=$('d-banner');
+  if(bn){
+    let cls,ico,txt;
+    if(sc.growth>=70){cls='ok';ico='⚡';txt='Excellent discipline. You are operating at a high level — keep stacking habits.';}
+    else if(sc.growth>=40){cls='so';ico='🎯';txt='Solid progress. You can push harder — one more intentional hour changes the trajectory.';}
+    else{cls='no';ico='⚠️';txt='Warning: You are losing momentum. Take action now — the gap widens every idle hour.';}
+    bn.className='banner '+cls;
+    set('d-bico',ico);set('d-btxt',txt);
+  }
+
+  // Tracker
+  ['study','workout','deepwork','skills'].forEach(f=>{
+    set('tv-'+f,D[f]+'h');
+    setPc('tb-'+f,(D[f]/L[f])*100);
+    set('tcv-'+f,`${D[f]} / ${L[f]}h`);
+  });
+  set('tv-cal',D.cal+' kcal');setPc('tb-cal',(D.cal/L.cal)*100);set('tcv-cal',`${D.cal} / ${L.cal}`);
+  set('tv-protein',D.protein+'g');setPc('tb-protein',(D.protein/L.protein)*100);set('tcv-protein',`${D.protein} / ${L.protein}g`);
+  setPc('tb-sleep',(D.sleep/L.sleep)*100);set('tcv-sleep',`${D.sleep} / ${L.sleep}h`);
+
+  ['instagram','youtube','twitter','other'].forEach(f=>set('sv-'+f,fmtM(D[f])));
+  set('sv-total',fmtM(soc));
+  if($('s-warn'))$('s-warn').style.display=soc>120?'flex':'none';
+
+  // Analytics
+  set('an-disc',sc.disc+'%');set('an-health',sc.health+'%');
+  set('an-focus',sc.focus+'%');set('an-growth',sc.growth+'%');
+  set('an-study',D.study+'h');setPc('anb-study',(D.study/L.study)*100);
+  set('an-workout',D.workout+'h');setPc('anb-workout',(D.workout/L.workout)*100);
+  set('an-deepwork',D.deepwork+'h');setPc('anb-deepwork',(D.deepwork/L.deepwork)*100);
+  set('an-skills',D.skills+'h');setPc('anb-skills',(D.skills/L.skills)*100);
+  set('an-sleep',D.sleep+'h');setPc('anb-sleep',(D.sleep/L.sleep)*100);
+  set('an-protein',D.protein+'g');setPc('anb-protein',(D.protein/L.protein)*100);
+  set('an-cal',D.cal);setPc('anb-cal',(D.cal/L.cal)*100);
+  set('an-social',fmtM(soc));setPc('anb-social',Math.min((soc/240)*100,100));
+  setPc('anb-growth',sc.growth);
+
+  renderRings();renderChart();renderMonthly();renderGoals();renderHist();
+};
+
+// ─── RINGS ────────────────────────────────
+const renderRings=()=>{
+  const now=new Date();
+  const yr=now.getFullYear();
+  const leap=(yr%4===0&&yr%100!==0)||(yr%400===0);
+  const diy=leap?366:365;
+  const doy=Math.floor((now-new Date(yr,0,0))/86400000);
+  const yp=r(doy/diy*100);
+  setRing('r-year',yp);set('r-yr-pct',yp+'%');set('r-yr-d',(diy-doy)+' days left');
+  const dim=new Date(yr,now.getMonth()+1,0).getDate();
+  const dom=now.getDate();
+  const mp=r(dom/dim*100);
+  setRing('r-month',mp);set('r-mo-pct',mp+'%');set('r-mo-d',(dim-dom)+' days left');
+};
+
+// ─── CHART ────────────────────────────────
+const renderChart=()=>{
+  const el=$('an-chart');if(!el)return;
+  const now=new Date();
+  let bars=[],th=0,td=0,cnt=0;
+  for(let i=6;i>=0;i--){
+    const d=new Date(now);d.setDate(now.getDate()-i);
+    const k=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const raw=localStorage.getItem('gos2_'+k);
+    let hrs=0,disc=0;
+    if(raw){const dd=JSON.parse(raw);hrs=dd.study+dd.workout+dd.deepwork+dd.skills;disc=r((dd.study/L.study+dd.workout/L.workout+dd.deepwork/L.deepwork+dd.skills/L.skills)/4*100);}
+    bars.push({day:WD[d.getDay()],hrs,disc});
+    th+=hrs;td+=disc;cnt++;
+  }
+  const mx=Math.max(...bars.map(b=>b.hrs),1);
+  el.innerHTML=bars.map((b,i)=>`<div class="ch-col"><div class="ch-bar" style="background:${DCOLS[i]};height:${r(b.hrs/mx*100)}px;" title="${b.day}: ${b.hrs}h"></div><span class="ch-lbl">${b.day}</span></div>`).join('');
+  set('an-wh',th.toFixed(1)+'h');
+  set('an-wd',r(td/cnt)+'%');
+  set('an-wp',getScores().disc+'%');
+};
+
+// ─── MONTHLY ──────────────────────────────
+const renderMonthly=()=>{
+  const now=new Date();
+  let th=0,td=0,cnt=0;
+  for(let d=1;d<=now.getDate();d++){
+    const k=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(d)}`;
+    const raw=localStorage.getItem('gos2_'+k);
+    if(raw){const dd=JSON.parse(raw);th+=dd.study+dd.workout+dd.deepwork+dd.skills;td+=r((dd.study/L.study+dd.workout/L.workout+dd.deepwork/L.deepwork+dd.skills/L.skills)/4*100);cnt++;}
+  }
+  const avg=cnt>0?r(td/cnt):0;
+  const ms=cnt>0?r((th/(now.getDate()*22))*100):0;
+  set('an-ms',ms+'%');set('an-mh',th.toFixed(0)+'h');set('an-md',avg+'%');
+  const rEl=$('an-mr');
+  if(rEl){let c='b-r',t='Needs Work';if(avg>=70){c='b-g';t='Elite';}else if(avg>=50){c='b-c';t='Good';}else if(avg>=30){c='b-y';t='Average';}rEl.innerHTML=`<span class="badge ${c}">${t}</span>`;}
+};
+
+// ─── GOALS ────────────────────────────────
+window.addGoal=()=>{
+  const inp=$('g-inp');const name=inp.value.trim();
+  if(!name)return;
+  goals.push({id:Date.now(),name,p:0});
+  saveGoals();inp.value='';renderGoals();
+};
+window.adjGoal=(id,d)=>{const g=goals.find(x=>x.id===id);if(g){g.p=Math.max(0,Math.min(100,g.p+d));saveGoals();renderGoals();}};
+window.delGoal=id=>{goals=goals.filter(x=>x.id!==id);saveGoals();renderGoals();};
+const renderGoals=()=>{
+  const el=$('goals-list');if(!el)return;
+  if(!goals.length){el.innerHTML='<div class="empty">No goals yet — add your first one above.</div>';return;}
+  el.innerHTML=goals.map(g=>{
+    const col=g.p>=75?'var(--green)':g.p>=40?'var(--yellow)':'var(--cyan)';
+    return`<div class="g-item">
+      <div class="g-top"><span class="g-name">${g.name}</span><span class="g-pct" style="color:${col}">${g.p}%</span></div>
+      <div class="pb-track" style="height:5px;"><div class="pb-fill" style="background:${col};width:${g.p}%"></div></div>
+      <div class="g-acts">
+        <button class="bs up" onclick="adjGoal(${g.id},1)">+1%</button>
+        <button class="bs up" onclick="adjGoal(${g.id},5)">+5%</button>
+        <button class="bs up" onclick="adjGoal(${g.id},10)">+10%</button>
+        <button class="bs" onclick="adjGoal(${g.id},-1)">−1%</button>
+        <button class="bs" onclick="adjGoal(${g.id},-5)">−5%</button>
+        <button class="bs dl" onclick="delGoal(${g.id})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+// ─── HISTORY ──────────────────────────────
+const snap=()=>{
+  const sc=getScores();const hist=loadHist();const k=tKey();
+  const entry={date:k,study:D.study,workout:D.workout,deepwork:D.deepwork,skills:D.skills,sleep:D.sleep,cal:D.cal,protein:D.protein,social:D.instagram+D.youtube+D.twitter+D.other,score:sc.growth};
+  const idx=hist.findIndex(h=>h.date===k);
+  if(idx>=0)hist[idx]=entry;else hist.unshift(entry);
+  saveHist(hist);
+};
+window.snapManual=()=>{snap();renderHist();};
+const renderHist=()=>{
+  const el=$('hist-list');if(!el)return;
+  const hist=loadHist();
+  if(!hist.length){el.innerHTML='<div class="empty">No records yet. Click "Save Today" to record your first entry.</div>';return;}
+  el.innerHTML=hist.slice(0,40).map(h=>{
+    const sc=h.score>=70?'var(--green)':h.score>=40?'var(--yellow)':'var(--red)';
+    return`<div class="h-row">
+      <div class="h-date">${h.date}</div>
+      <div class="h-cell"><div class="h-val" style="color:var(--cyan)">${h.study}h</div></div>
+      <div class="h-cell"><div class="h-val" style="color:var(--cyan)">${h.sleep}h</div></div>
+      <div class="h-cell"><div class="h-val" style="color:var(--yellow)">${h.cal}</div></div>
+      <div class="h-cell"><div class="h-val" style="color:var(--green)">${h.protein}g</div></div>
+      <div class="h-cell"><div class="h-val" style="color:${sc}">${h.score}%</div></div>
+    </div>`;
+  }).join('');
+};
+
+// ─── NAV ──────────────────────────────────
+window.go=(id,btn)=>{
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  $('p-'+id).classList.add('active');
+  btn.classList.add('active');
+  render();
+};
+
+// ─── RESET ────────────────────────────────
+window.resetToday=()=>{
+  if(!confirm("Reset today's data?"))return;
+  D={study:0,workout:0,deepwork:0,skills:0,sleep:0,cal:0,protein:0,instagram:0,youtube:0,twitter:0,other:0};
+  saveDay();render();
+};
+
+// ─── INIT ─────────────────────────────────
+const init=()=>{
+  const now=new Date();
+  const Mo=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const Da=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  set('d-date',`${Da[now.getDay()]}, ${now.getDate()} ${Mo[now.getMonth()]} ${now.getFullYear()}`);
+  render();snap();
+  setInterval(snap,3600000);
+  setInterval(renderRings,60000);
+};
+init();
+</script>
+</body>
+</html>
